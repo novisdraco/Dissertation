@@ -1,0 +1,16 @@
+{
+  "name": "network-monitor-backend",
+  "version": "1.0.0",
+  "description": "Real-time network traffic monitor backend",
+  "main": "network-monitor-server.js",
+  "scripts": {
+    "start": "node network-monitor-server.js",
+    "dev": "nodemon network-monitor-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
