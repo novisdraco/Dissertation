@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { AlertTriangle, Shield, Activity, Users, Eye, Wifi, Server } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -85,6 +85,7 @@ export default function RealNetworkMonitor() {
   const [activeConnections, setActiveConnections] = useState<NetworkConnection[]>([])
   const [securityThreats, setSecurityThreats] = useState<SecurityThreat[]>([])
   const [isMonitoring, setIsMonitoring] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null) 
 
   // WebSocket connection for real-time data
   useEffect(() => {
@@ -96,6 +97,7 @@ export default function RealNetworkMonitor() {
     const connect = () => {
       try {
         ws = new WebSocket("ws://localhost:8080")
+        wsRef.current = ws
 
         ws.onopen = () => {
           setIsConnected(true)
@@ -170,23 +172,31 @@ export default function RealNetworkMonitor() {
   }, [])
 
   const startMonitoring = () => {
-    if (isConnected && selectedInterface) {
-      // Send message through existing connection instead of creating new one
-      const message = JSON.stringify({
-        action: "start_capture",
-        interface: selectedInterface,
-      })
-
-      // We'll need to store the WebSocket reference to send messages
-      console.log("Starting monitoring for interface:", selectedInterface)
-      setIsMonitoring(true)
-    }
+  if (isConnected && selectedInterface && wsRef.current) {
+    const message = JSON.stringify({
+      action: "start_capture",
+      interface: selectedInterface,
+    });
+    wsRef.current.send(message); // This line sends the command
+    console.log("Starting monitoring for interface:", selectedInterface);
+    setIsMonitoring(true);
   }
-
+};
+  
   const stopMonitoring = () => {
-    console.log("Stopping monitoring")
-    setIsMonitoring(false)
+  if (wsRef.current) {
+    const message = JSON.stringify({
+      action: "stop_capture",
+    });
+    wsRef.current.send(message); // This line sends the command
   }
+  console.log("Stopping monitoring");
+  setIsMonitoring(false);
+};
+  
+  
+
+
 
   const getProtocolColor = (protocol: string) => {
     switch (protocol.toLowerCase()) {
